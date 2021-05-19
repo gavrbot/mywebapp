@@ -1,14 +1,27 @@
-import React from "react";
+import React, {useCallback, useState} from "react";
 import useForm from "../useForm";
-import { Button, Form, Alert, Row, Col } from "react-bootstrap";
+import  { Modal, Button, Form, Alert, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./CreditCardForm.css";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
+import QRCode from "qrcode.react"
 
 
 const CreditCardForm = () => {
     const { handleChange, handleFocus, handleSubmit, values, errors } = useForm();
+    const [ qrCodeValue, setQrCodeValue ] = useState('')
+
+    const onHandleSubmit = useCallback(() => {
+        setQrCodeValue("I am Iron Man");
+        setShow(true)
+    }, [])
+
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
     return (
         <div>
             <div className="container">
@@ -119,6 +132,7 @@ const CreditCardForm = () => {
                                 data-testid="validateButton"
                                 id="validateButton"
                                 type="submit"
+                                onClick={onHandleSubmit}
                             >
                                 Validate
                             </Button>
@@ -132,6 +146,24 @@ const CreditCardForm = () => {
                     >
                         {errors.message}
                     </Alert>{" "}
+                    <Modal show={show} onHide={handleClose}>
+                        <Modal.Header>
+                            <Modal.Title>Modal heading</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <QRCode
+                                value={qrCodeValue}
+                            />
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={handleClose}>
+                                Close
+                            </Button>
+                            <Button variant="primary" onClick={handleClose}>
+                                Save Changes
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
                 </div>
             </div>
         </div>
