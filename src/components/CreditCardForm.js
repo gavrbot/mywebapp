@@ -1,6 +1,6 @@
 import React, {useCallback, useState} from "react";
 import useForm from "../useForm";
-import  { Modal, Button, Form, Alert, Row, Col } from "react-bootstrap";
+import  { Container, Modal, Button, Form, Alert, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./CreditCardForm.css";
 import Cards from "react-credit-cards";
@@ -63,70 +63,19 @@ const CreditCardForm = () => {
                                     isValid={errors.cnumber}
                                 />
                             </Form.Group>
-                            <Row>
-                                <Col>
-                                    <Form.Group>
-                                        <Form.Control
-                                            type="text"
-                                            name="cardType"
-                                            id="cardType"
-                                            data-testid="cardType"
-                                            placeholder="Card Type"
-                                            value={values.cardType}
-                                            onChange={handleChange}
-                                            onFocus={handleFocus}
-                                            isValid={errors.ctype}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group>
-                                        <Form.Control
-                                            type="text"
-                                            id="cardExpiration"
-                                            data-testid="cardExpiration"
-                                            name="cardExpiration"
-                                            placeholder="Expiration Date"
-                                            value={values.cardExpiration}
-                                            onChange={handleChange}
-                                            onFocus={handleFocus}
-                                            isValid={errors.cexp}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col>
-                                    <Form.Group>
-                                        <Form.Control
-                                            type="number"
-                                            id="cardSecurityCode"
-                                            data-testid="cardSecurityCode"
-                                            name="cardSecurityCode"
-                                            placeholder="Security Code"
-                                            value={values.cardSecurityCode}
-                                            onChange={handleChange}
-                                            onFocus={handleFocus}
-                                            isValid={errors.ccvv}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                                <Col>
-                                    <Form.Group>
-                                        <Form.Control
-                                            type="text"
-                                            id="cardPostalCode"
-                                            data-testid="cardPostalCode"
-                                            name="cardPostalCode"
-                                            placeholder="Postal Code"
-                                            value={values.cardPostalCode}
-                                            onChange={handleChange}
-                                            onFocus={handleFocus}
-                                            isValid={errors.cpostal}
-                                        />
-                                    </Form.Group>
-                                </Col>
-                            </Row>
+                            <Form.Group>
+                                <Form.Control
+                                    type="number"
+                                    id="cardNumber"
+                                    data-testid="cardNumber"
+                                    name="cardNumber"
+                                    placeholder="Card Number"
+                                    value={values.cardNumber}
+                                    onChange={handleChange}
+                                    onFocus={handleFocus}
+                                    isValid={errors.cnumber}
+                                />
+                            </Form.Group>
                             <Button
                                 size={"block"}
                                 data-testid="validateButton"
@@ -138,30 +87,44 @@ const CreditCardForm = () => {
                             </Button>
                         </Form>
                     </div>
-                    <Alert
-                        id="alertMessage"
-                        data-testid="alertMessage"
-                        variant={errors.variant}
-                        show={errors.show}
+                    <Modal
+                        show={show}
+                        onHide={handleClose}
+                        backdrop="static"
+                        keyboard={false}
+                        size="lg"
+                        aria-labelledby="contained-modal-title-vcenter"
+                        centered
                     >
-                        {errors.message}
-                    </Alert>{" "}
-                    <Modal show={show} onHide={handleClose}>
                         <Modal.Header>
-                            <Modal.Title>Modal heading</Modal.Title>
+                            <Modal.Title> Confirm your transaction</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            <QRCode
-                                value={qrCodeValue}
-                            />
+
+                            <Form>
+                                <Form.Row>
+                                    <Container>
+                                        <Col xs={9} md={6}>
+                                            <Form.Group>
+                                                <QRCode value={qrCodeValue}/>
+                                            </Form.Group>
+                                        </Col>
+
+                                        <Col xs={9} md={6}>
+                                            <Form.Group>
+                                                <Form.Label>Scan this QR code</Form.Label>
+                                                <Form.Control type="password" placeholder="Password" />
+                                            </Form.Group>
+                                        </Col>
+                                    </Container>
+                                </Form.Row>
+                            </Form>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleClose}>
                                 Close
                             </Button>
-                            <Button variant="primary" onClick={handleClose}>
-                                Save Changes
-                            </Button>
+                            <Button variant="primary">Confirm</Button>
                         </Modal.Footer>
                     </Modal>
                 </div>
