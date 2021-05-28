@@ -6,9 +6,7 @@ const useForm = () => {
         cardName: '',
         cardNumber: '',
         cardType: '',
-        cardExpiration: '',
-        cardSecurityCode: '',
-        cardPostalCode: '',
+        cardAmount:'',
         focus: ''
     })
 
@@ -33,7 +31,7 @@ const useForm = () => {
         //
         //
         e.preventDefault()
-        setErrors(validateInfo(values))
+        //setErrors(validateInfo(values))
     };
 
     return { handleChange, handleFocus, handleSubmit, values, errors };

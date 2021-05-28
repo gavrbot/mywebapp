@@ -1,5 +1,4 @@
 .container {
-    margin-top: 10%;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -21,4 +20,20 @@
 
 .creditCard{
     margin-bottom: 10%;
+}
+
+.main-container {
+    margin-top: 10%;
+}
+
+.modal-container {
+    height: 200px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.QR-from-group {
+    text-align: center;
 }
