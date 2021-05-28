@@ -15,12 +15,17 @@ const CreditCardForm = () => {
     const [timer, setTimer] = useState(undefined)
 
     const onHandleSubmit = useCallback(() => {
-        // setQrCodeValue(values.cardName+' '+values.cardNumber+' '+values.cardAmount);
+        setQrCodeValue(timeStamp+
+            ' '+values.cardAmount+
+            ' '+values.cardName.slice(0,values.cardName.indexOf(" "))+
+            ' '+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
+            ' '+getOperationType(1)+
+            ' '+makeid(6));
         setShow(true)
     }, [])
 
     const onConfirmPassword = useCallback(() => {
-        if(pass === qrCodeValue){
+        if(pass === "12345"){
             setTimer(new Date())
             console.log("Success")
             alert("success")
@@ -28,13 +33,14 @@ const CreditCardForm = () => {
         else
             setTimer(undefined)
             console.log("False")
+            alert("error")
     }, [pass, qrCodeValue, setTimer])
 
     const [show, setShow] = useState(false);
 
     const currentDate = new Date();
 
-    const date = currentDate.getDate() + "/" + currentDate.getMonth() + "/" + currentDate.getFullYear();
+    const date = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
 
     const time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
 
@@ -43,8 +49,19 @@ const CreditCardForm = () => {
     // eslint-disable-next-line no-unused-vars
     function getOperationType(numb) {
         if(numb === 1)
-            return "Банковский перевод"
+            return "bank_transfer"
 
+    }
+
+    function makeid(length) {
+        var result = [];
+        var characters = '0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result.push(characters.charAt(Math.floor(Math.random() *
+                charactersLength)));
+        }
+        return result.join('');
     }
 
     const handleClose = () => setShow(false);
@@ -132,12 +149,7 @@ const CreditCardForm = () => {
                                     <Container className="modal-container">
                                         <Col>
                                             <Form.Group className="QR-from-group">
-                                                <QRCode value={timeStamp+
-                                                ' '+values.cardAmount+
-                                                ' '+values.cardName.slice(0,values.cardName.indexOf(" "))+
-                                                ' '+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
-                                                ' '+getOperationType(1)
-                                                }/>
+                                                <QRCode value={qrCodeValue}/>
                                             </Form.Group>
                                         </Col>
 
