@@ -20,11 +20,14 @@ const CreditCardForm = () => {
             ' '+values.cardName.slice(0,values.cardName.indexOf(" "))+
             ' '+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             ' '+getOperationType(1)+
-            ' '+makeid(6));
+            //' '+makeid(6))
+            ' '+genPassword)
         setShow(true)
-    }, [])
+    }, [values])
 
     const onConfirmPassword = useCallback(() => {
+        console.log(genPassword)
+        console.log(pass)
         if(pass === "12345"){
             setTimer(new Date())
             console.log("Success")
@@ -63,6 +66,8 @@ const CreditCardForm = () => {
         }
         return result.join('');
     }
+
+    const genPassword = makeid(6)
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
