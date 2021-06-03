@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import useForm from "../useForm";
 import  { Container, Modal, Button, Form, Alert, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -6,13 +6,48 @@ import "./CreditCardForm.css";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
+import {init, SecretKey, secretKeyToPublicKey, sign, verify} from "@chainsafe/bls";
 
+const makeid = (length) => {
+    var result = [];
+    var characters = '0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+    }
+    return result.join('');
+}
 
 const CreditCardForm = () => {
     const { handleChange, handleFocus, handleSubmit, values, errors } = useForm();
     const [ qrCodeValue, setQrCodeValue ] = useState('')
     const [pass, setPass] = useState('')
     const [timer, setTimer] = useState(undefined)
+    const [secretKey, setSecretKey] = useState()
+    const [publicKey, setPublicKey] = useState()
+    const [genPass, setGenPass] = useState(makeid(6))
+
+
+    useEffect(() => {
+        (async () => {
+            await init("herumi");
+            //setSecretKey(SecretKey.fromBytes(new Uint8Array([801219013,1006956190,1632367562,305654819,509016549,3057871943,332850552,1911033748,801219013,1006956190,1632367562,305654819,509016549,3057871943,332850552,1911033748,801219013,1006956190,1632367562,305654819,509016549,3057871943,332850552,1911033748,801219013,1006956190,1632367562,305654819,509016549,3057871943,332850552,1911033748])));
+            setSecretKey(SecretKey.fromBytes(new Uint8Array([1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])));
+            //setSecretKey(SecretKey.fromKeygen());
+        })();
+    },[setSecretKey])
+
+
+    useEffect(() => {
+        if(secretKey !== undefined){
+            setPublicKey(secretKey.toPublicKey());
+        }
+    },[secretKey, setPublicKey])
+
+
+    // useEffect(() => {
+    //     setGenPass(makeid(6))
+    // },[qrCodeValue, setGenPass])
 
     const onHandleSubmit = useCallback(() => {
         setQrCodeValue(timeStamp+
@@ -21,23 +56,34 @@ const CreditCardForm = () => {
             ' '+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             ' '+getOperationType(1)+
             //' '+makeid(6))
-            ' '+genPassword)
+            ' '+genPass)
         setShow(true)
-    }, [values])
+        //setGenPass(makeid(6))
+    }, [values, genPass])
 
     const onConfirmPassword = useCallback(() => {
-        console.log(genPassword)
+        console.log(genPass)
         console.log(pass)
-        if(pass === "12345"){
+        if(secretKey !== undefined && publicKey !== undefined){
+            console.log(secretKey)
+            console.log(publicKey)
+            const signature = secretKey.sign(qrCodeValue)
+            console.log(signature)
+            console.log(signature.toBytes())
+            console.log(new TextDecoder().decode(signature.toBytes()))
+            console.log(signature.verify(publicKey,qrCodeValue))
+
+        }
+        if(pass === genPass){
             setTimer(new Date())
             console.log("Success")
             alert("success")
         }
         else
             setTimer(undefined)
-            console.log("False")
+            console.log("Password is not correct")
             alert("error")
-    }, [pass, qrCodeValue, setTimer])
+    }, [pass,genPass, qrCodeValue, setTimer])
 
     const [show, setShow] = useState(false);
 
@@ -55,19 +101,6 @@ const CreditCardForm = () => {
             return "bank_transfer"
 
     }
-
-    function makeid(length) {
-        var result = [];
-        var characters = '0123456789';
-        var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
-            result.push(characters.charAt(Math.floor(Math.random() *
-                charactersLength)));
-        }
-        return result.join('');
-    }
-
-    const genPassword = makeid(6)
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
