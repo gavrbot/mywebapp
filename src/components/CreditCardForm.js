@@ -7,6 +7,7 @@ import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
 import {init, SecretKey, secretKeyToPublicKey, sign, verify} from "@chainsafe/bls";
+import rsa from 'js-crypto-rsa';
 
 const makeid = (length) => {
     var result = [];
@@ -50,6 +51,36 @@ const CreditCardForm = () => {
     // },[qrCodeValue, setGenPass])
 
     const onHandleSubmit = useCallback(() => {
+        rsa.generateKey(2048).then( (key) => {
+            const publicKey = key.publicKey
+            const privateKey = key.privateKey;
+            console.log(genPass)
+            console.log(publicKey)
+            console.log(privateKey)
+            const bytePass = new TextEncoder().encode(genPass)
+            // const encrypted = ''
+            // rsa.encrypt(bytePass, publicKey).
+            // console.log(encrypted)
+            // const decrypted = ''
+            // rsa.decrypt(encrypted, privateKey).then(decrypted)
+            // console.log(decrypted)
+
+            rsa.encrypt(
+                bytePass,
+                publicKey,
+            ).then( (encrypted) => {
+                console.log(encrypted)
+                return rsa.decrypt(
+                    encrypted,
+                    privateKey,
+                );
+            }).then( (decrypted) => {
+                console.log(decrypted)
+                console.log(new TextDecoder().decode(decrypted))
+            });
+        })
+
+
         setQrCodeValue(timeStamp+
             ' '+values.cardAmount+
             ' '+values.cardName.slice(0,values.cardName.indexOf(" "))+
@@ -72,7 +103,6 @@ const CreditCardForm = () => {
             console.log(signature.toBytes())
             console.log(new TextDecoder().decode(signature.toBytes()))
             console.log(signature.verify(publicKey,qrCodeValue))
-
         }
         if(pass === genPass){
             setTimer(new Date())
