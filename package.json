@@ -16,6 +16,7 @@
     "react-credit-cards": "^0.8.3",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "utf32char": "^1.4.1",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
