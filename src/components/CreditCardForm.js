@@ -6,7 +6,6 @@ import "./CreditCardForm.css";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
-import {init, SecretKey, secretKeyToPublicKey, sign, Signature, verify} from "@chainsafe/bls";
 import rsa from 'js-crypto-rsa';
 import {UInt32, UTF32Char} from "utf32char";
 
@@ -26,43 +25,9 @@ const CreditCardForm = () => {
     const [ qrCodeValue, setQrCodeValue ] = useState('')
     const [pass, setPass] = useState('')
     const [timer, setTimer] = useState(undefined)
-    const [secretBLSKey, setSecretBLSKey] = useState()
-    const [publicBLSKey, setPublicBLSKey] = useState()
     const [genPass, setGenPass] = useState(makeid(6))
     const [secretRSAKey, setSecretRSAKey] = useState()
     const [publicRSAKey, setPublicRSAKey] = useState()
-
-    useEffect(() => {
-        (async () => {
-            await init("herumi");
-            setSecretBLSKey(SecretKey.fromBytes(new Uint8Array([2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])));
-            //setSecretBLSKey(SecretKey.fromKeygen());
-        })();
-    },[setSecretBLSKey])
-
-
-    useEffect(() => {
-        if(secretBLSKey !== undefined){
-            setPublicBLSKey(secretBLSKey.toPublicKey());
-        }
-    },[secretBLSKey, setPublicBLSKey])
-
-    /*
-    useEffect(() => {
-        (async () => {
-            // возможно сюда придётся засовывать сразу шифрование
-            // одноразового пароля и добавлять его зашифрованным
-            rsa.generateKey(2048).then((key) => {
-                setPublicRSAKey(key.publicKey)
-                setSecretRSAKey(key.publicKey)
-            })
-        })();
-    },[setPublicRSAKey, setSecretRSAKey])
-    */
-
-    // useEffect(() => {
-    //     setGenPass(makeid(6))
-    // },[qrCodeValue, setGenPass])
 
     const onHandleSubmit = useCallback(() => {
 
@@ -134,53 +99,6 @@ const CreditCardForm = () => {
     const onConfirmPassword = useCallback(() => {
         console.log(genPass)
         console.log(pass)
-        if(secretBLSKey !== undefined && publicBLSKey !== undefined){
-            // console.log(secretBLSKey)
-            // console.log(publicBLSKey)
-            // const signature = secretBLSKey.sign(qrCodeValue)
-            // console.log(signature)
-            // console.log(signature.value.a_)
-            // console.log(signature.value.a_)
-            //
-            // const sig_copy = Signature.fromBytes(new Uint8Array(96));
-            // sig_copy.value.a_ = signature.value.a_
-            // console.log(sig_copy)
-            // console.log(Object.is(signature.value.a_, sig_copy.value.a_))
-            //
-            //
-            //
-            // // запись в результуриющую строку для отправки
-            // var res = ''
-            // signature.value.a_.forEach(function (item) {
-            //     let index: UInt32 = new UInt32(item)
-            //     let indexAsChar: UTF32Char = UTF32Char.fromUInt32(index)
-            //     res += indexAsChar
-            // })
-            //
-            // console.log(res)
-            // console.log(res.length)
-            //
-            //
-            // // чтение строки и преобразование в Uint32Array для проверки подписи
-            // var array_res = new Uint32Array(72)
-            // for (let i = 0; i < 144; i+=2) {
-            //     let char: UTF32Char = new UTF32Char(res.slice(i, i+2))
-            //     let charAsUInt: UInt32 = char.toUInt32()
-            //     array_res[i/2] = charAsUInt._value
-            // }
-            // console.log(array_res)
-            // console.log(array_res.length)
-            //
-            //
-            // console.log(sig_copy.verify(publicBLSKey,qrCodeValue))
-
-            // const t_s = new TextDecoder("UTF-16").decode(signature.value.a_) // найти декодер 32 или 64 битный
-            // console.log(t_s)
-            // console.log(t_s.length)
-            //
-            // console.log(new TextEncoder().encode(t_s))
-            // console.log(signature.verify(publicBLSKey,qrCodeValue))
-        }
         if(pass === genPass){
             setTimer(new Date())
             console.log("Success")
