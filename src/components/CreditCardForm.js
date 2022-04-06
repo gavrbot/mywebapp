@@ -8,7 +8,10 @@ import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
 import rsa from 'js-crypto-rsa';
 import {UInt32, UTF32Char} from "utf32char";
-
+import {JSEncrypt} from "jsencrypt";
+import CryptoJS from "crypto-js";
+import zlib from "zlib";
+import sizeof from "object-sizeof";
 
 const makeid = (length) => {
     var result = [];
@@ -31,69 +34,53 @@ const CreditCardForm = () => {
 
     const onHandleSubmit = useCallback(() => {
 
-        rsa.generateKey(2048).then( (key) => {
-            const publicKey = key.publicKey
-            publicKey.n = "m6aT_g3ZQMPOpXGMmBmZzXWQ938-gY9clNDmD6bOagXNNrItX6gzlFfnn_Au1J64sYGe3RB-CcfyWw1kKLLEkqIaeKMZAoL7Nffm_GGwFJzncMwuMSi8ZVuD1-Fgb2FDAIEGKgssbf2XUo-L25ytJiPYo0qBFoUPEYpHKnP4Ws7NN-Qswl1Vz3zoXWw6RYu7L6UyJA_eF95ERtDXkPqRCYjNUYVbfoAJrLK_iYjFX1cJ1zQwBotjum-Wt_lgvHkRfwX75_4_cTJcdsSsdmuG4roTQqrTWpfwhd1pNgsTNPShAHKlccXoS_M6l-f2dXd5ca7dE7Hv5quj62QCLbelsQ"
-            const privateKey = key.privateKey;
-            privateKey.d = "AXFm3yCeR79RnNjEGaoRzAhqjlZz-gBf3KWmKVSbM4yIDtQhjgqM1DA1hKTEhS_EzlmNfwwhm4l_blYR4Lg5ttfp4NtZk3cyGK5rc56OK43-cvZV8hpmXBLXf5Op6CAphHnXQHbowavaV2P6seSRFYE3ySWzWaNkvxJJiaNuyLFdigmKi4MBproGFJnPM_GDTa8_O-ydARHREggwOgbeU0TDIB8wU4QYS7CANyvMnCHQdLwuv7NNEJ_DYTKzfPdkrKI4JkGKdEGDhRqiZQkD0f0W0tuKlKJiauPTvP_Y_WDg2-L-iZe2ckX5EqZeIFJ3JPK7x2zOfICrU1EXxZwkQQ"
-            privateKey.dp = "BEZowA-AwrJ6pOz0dxZzcMJcEtdUkoeMAAfOHuQOaKWR5I2MYByk6EKg2C1goCqTE8QpmGpe5xrzf26e20mhrCvTmiTbx-LDas1ZGtJwawUZR-ZxC1G50S5aK0Jj5obFwguE0lYp3anRGfnMGUbIvzZZMeaJ3wseIFxO_VGD_xs"
-            privateKey.dq = "V0m4_V_EL5srghqw1zDJeYSgdpOgdWEGHtJxsb5uvQlIYXPzJ6pBKjRH9RUGGPrOpNE9yLUgewp0KEzhvv-pdyW4CYtT5z0AwPb6ueaKPx3QKDztoovUmX14mW9QcTCmbt9cySDlExZmnCNiKF2W-a4JZJixUcmWMQlMJZOZdHs"
-            privateKey.n = "m6aT_g3ZQMPOpXGMmBmZzXWQ938-gY9clNDmD6bOagXNNrItX6gzlFfnn_Au1J64sYGe3RB-CcfyWw1kKLLEkqIaeKMZAoL7Nffm_GGwFJzncMwuMSi8ZVuD1-Fgb2FDAIEGKgssbf2XUo-L25ytJiPYo0qBFoUPEYpHKnP4Ws7NN-Qswl1Vz3zoXWw6RYu7L6UyJA_eF95ERtDXkPqRCYjNUYVbfoAJrLK_iYjFX1cJ1zQwBotjum-Wt_lgvHkRfwX75_4_cTJcdsSsdmuG4roTQqrTWpfwhd1pNgsTNPShAHKlccXoS_M6l-f2dXd5ca7dE7Hv5quj62QCLbelsQ"
-            privateKey.p = "08Vf34qC2C95NYWXIacXpcpeRe54t3XxmWhTVupi0iLvMHXT0Pu_KL0Rw6vKHmsNatuxKfuccJaozksiO04qiCB2zZXymVtj9InA87ilJN1r-Pr1T61m7H1DEbd39CIcaLyi5hF0QoChub1zVw1bIzxB1oodVMAtkKDdraq6RE8"
-            privateKey.q = "vCinuSRLvjc-_E4helFCv-ofxW4Ah9BWW0Nbkk1raYwzQG0Ht9VvMWFDalSVJ-Tq2omXa6Bj1OEmZOZcXmtcmp9A0jJzBmYJQxCX-b769BGtJTwlAshX87Cy-JTAJ1k1hfjw48xI4qJffWb9f0Cv4BzbUYRStRwZHUXWv47S9f8"
-            privateKey.qi = "WnjrWwn-8JpXMQrBYrYdgTayup_Ir-J693-rDIqxchkW03VwLEEYxtY1Nh0R_gZTuC2aZ6nb8e8Q5vjcjDNSxMh-IXjBjTMYIJOGJg-2TolPl0TMQU2o0AvfL7fLX5l2RfbhjIJqiFBMwJ8QUuFCTKFbCoWFXE9W30Su2h0snr0"
-            console.log(genPass)
-            console.log(publicKey)
-            console.log(privateKey)
-            const bytePass = new TextEncoder().encode(genPass)
+        let publicCheckKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO71iVLEu7umehJ0HJ5501wW1rSKTL3hkng+WRJZCnQ/3ZWLJrdLdgRRkaQMpzdF+AmqvtioluXjZdyrhLpkRtcAkjgQbBnRnL5zirJydmYZJU8CRSjrrER439hHTD9Zml1y9Pa//NPcfnd9iw6kZSX5rArEzFiKp3hRZGgecYwIDAQAB"
+
+        let privateCheckKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAME7vWJUsS7u6Z6EnQcnnnTXBbWtIpMveGSeD5ZElkKdD/dlYsmt0t2BFGRpAynN0X4Caq+2KiW5eNl3KuEumRG1wCSOBBsGdGcvnOKsnJ2ZhklTwJFKOusRHjf2EdMP1maXXL09r/809x+d32LDqRlJfmsCsTMWIqneFFkaB5xjAgMBAAECgYEAm4K/hI5SVkoyO7/QPDzXWoLd9ntTEw8mHhvSwYWLRCrw+ZJfsZ2x0VAboD+fKxqYGYhKYgUB4IBm0OUF3lnJF0CmzWYcPg7QpsNRU2iCp50c6EyGmNItpPQycnTx68xG1RTYE1EXfwAmHDeB9Bbsk87HHdJQqjANnUFeSDPq9/ECQQDelkKO7rZA/KNKmQJZIqGEGWvlMb+5SuHCiVRLT3vqKuaub0Fym1Ey6ngVYN5yZt2tnUV6brfwr+/y3TyQlq0pAkEA3j11Ju32DsAzC4dtmDM4vee8KY7OpnE2dkEGA9K6U8M/R3y3WQEtUC8kqf+m9EXOdiMlB72Ld0N0TojQ+R6iqwJAMcDShdJz6JjQAyeqb7Qe+EEabfOt0EQdrHc34VGV+CS4xXrW3UA8aS4hw12Qu2+k017ZHeHLucAJ2XZ8SDF16QJAE+woe2Proeji6o6qaXF2Dbgfaw5NQih1/GXZ1y/l2ipvmsX4Xbc4S67eN4seeVlkp7yAzk/Ul81pOL0VFrADXwJBAI/2Oq2AcSNOu6QY3JuzU4kN1mjKGDkBqmV3nHev9bp7NLyoasqzg8xo9lvuYjPpo47JXPgpH+CXXkLTTmqk/m8=";
+
+        var CryptoJS = require("crypto-js");
+        const zlib = require('zlib');
+        const zlib2 = require('zlib');
+        const sizeof = require('object-sizeof');
+
+        var encrypt = new JSEncrypt()
+        encrypt.setPublicKey(publicCheckKey)
+
+        var message = genPass+
+            " "+timeStamp+
+            " "+values.cardAmount+
+            " "+values.cardName.slice(0,values.cardName.indexOf(" "))+
+            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
+            " "+getOperationType(1);
 
 
-            rsa.encrypt(
-                bytePass,
-                publicKey,
-            ).then( (encrypted) => {
+        console.log("message: " + message)
 
-                console.log(encrypted)
-                console.log(encrypted.length)
+        var sign = new JSEncrypt();
+        sign.setPrivateKey(privateCheckKey);
+        var signature = sign.sign(message, CryptoJS.SHA256, "sha256");
 
-               const str_enc = String.fromCharCode(...encrypted)
+        console.log("signature: " + signature)
 
-                setQrCodeValue(str_enc)
+        console.log(signature.length)
 
-                // setQrCodeValue(str_enc+
-                //     ' '+timeStamp+
-                //     ' '+values.cardAmount+
-                //     ' '+values.cardName.slice(0,values.cardName.indexOf(" "))+
-                //     ' '+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
-                //     ' '+getOperationType(1))
-                //     //' '+genPass)
+        console.info(`String size: ${signature.length}`);
+        let buffer = zlib.deflateSync(signature);
+        signature = buffer.toString('base64');
+        console.info(`compressed String size: ${signature.length}`);
 
-                console.log(str_enc)
-                console.log(str_enc.length)
+        // var messageAndSignature = message+signature
+        //
+        // console.log("M&S len: " + messageAndSignature.length)
+        //
+        // var encryptedMessage = encrypt.encrypt(signature)
+        //
+        // console.log(encryptedMessage)
+        // console.log(encryptedMessage.length)
 
-                var bytes = new Uint8Array(256);
-                for(var i = 0; i < str_enc.length; i++) {
-                    var char = str_enc.charCodeAt(i);
-                    bytes[i] = (char & 0xFF);
-                }
+        setQrCodeValue(message)
 
-                console.log(bytes)
-
-
-                return rsa.decrypt(
-                    encrypted,
-                    privateKey,
-                );
-            }).then( (decrypted) => {
-                console.log(decrypted)
-                console.log(new TextDecoder().decode(decrypted))
-            });
-        })
-
-
-        //setQrCodeValue(qrData)
         setShow(true)
-        //setGenPass(makeid(6))
     }, [values, genPass])
 
     const onConfirmPassword = useCallback(() => {
