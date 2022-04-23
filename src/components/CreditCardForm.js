@@ -39,46 +39,43 @@ const CreditCardForm = () => {
         let privateCheckKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAME7vWJUsS7u6Z6EnQcnnnTXBbWtIpMveGSeD5ZElkKdD/dlYsmt0t2BFGRpAynN0X4Caq+2KiW5eNl3KuEumRG1wCSOBBsGdGcvnOKsnJ2ZhklTwJFKOusRHjf2EdMP1maXXL09r/809x+d32LDqRlJfmsCsTMWIqneFFkaB5xjAgMBAAECgYEAm4K/hI5SVkoyO7/QPDzXWoLd9ntTEw8mHhvSwYWLRCrw+ZJfsZ2x0VAboD+fKxqYGYhKYgUB4IBm0OUF3lnJF0CmzWYcPg7QpsNRU2iCp50c6EyGmNItpPQycnTx68xG1RTYE1EXfwAmHDeB9Bbsk87HHdJQqjANnUFeSDPq9/ECQQDelkKO7rZA/KNKmQJZIqGEGWvlMb+5SuHCiVRLT3vqKuaub0Fym1Ey6ngVYN5yZt2tnUV6brfwr+/y3TyQlq0pAkEA3j11Ju32DsAzC4dtmDM4vee8KY7OpnE2dkEGA9K6U8M/R3y3WQEtUC8kqf+m9EXOdiMlB72Ld0N0TojQ+R6iqwJAMcDShdJz6JjQAyeqb7Qe+EEabfOt0EQdrHc34VGV+CS4xXrW3UA8aS4hw12Qu2+k017ZHeHLucAJ2XZ8SDF16QJAE+woe2Proeji6o6qaXF2Dbgfaw5NQih1/GXZ1y/l2ipvmsX4Xbc4S67eN4seeVlkp7yAzk/Ul81pOL0VFrADXwJBAI/2Oq2AcSNOu6QY3JuzU4kN1mjKGDkBqmV3nHev9bp7NLyoasqzg8xo9lvuYjPpo47JXPgpH+CXXkLTTmqk/m8=";
 
         var CryptoJS = require("crypto-js");
-        const zlib = require('zlib');
-        const zlib2 = require('zlib');
-        const sizeof = require('object-sizeof');
 
-        var encrypt = new JSEncrypt()
-        encrypt.setPublicKey(publicCheckKey)
+        var messageForSignature = values.cardName.slice(0,values.cardName.indexOf(" "))+
+            values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
+            timeStamp+
+            values.cardAmount+
+            getOperationType(1);
 
-        var message = genPass+
+        var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
+            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             " "+timeStamp+
             " "+values.cardAmount+
-            " "+values.cardName.slice(0,values.cardName.indexOf(" "))+
-            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             " "+getOperationType(1);
-
 
         console.log("message: " + message)
 
         var sign = new JSEncrypt();
         sign.setPrivateKey(privateCheckKey);
-        var signature = sign.sign(message, CryptoJS.SHA256, "sha256");
+        var signature = sign.sign(messageForSignature + genPass, CryptoJS.SHA256, "sha256");
 
         console.log("signature: " + signature)
 
         console.log(signature.length)
 
-        console.info(`String size: ${signature.length}`);
-        let buffer = zlib.deflateSync(signature);
-        signature = buffer.toString('base64');
-        console.info(`compressed String size: ${signature.length}`);
+        var encrypt = new JSEncrypt()
+        encrypt.setPublicKey(publicCheckKey)
 
-        // var messageAndSignature = message+signature
-        //
-        // console.log("M&S len: " + messageAndSignature.length)
-        //
-        // var encryptedMessage = encrypt.encrypt(signature)
-        //
-        // console.log(encryptedMessage)
-        // console.log(encryptedMessage.length)
+        var encryptedPass = encrypt.encrypt(genPass)
 
-        setQrCodeValue(message)
+        console.log("encrypted password: " + encryptedPass)
+        console.log(encryptedPass.length)
+
+        const qrCodeMessage = message + " " + encryptedPass + " " + signature
+
+        console.log("qrcode message: " + qrCodeMessage)
+        console.log(qrCodeMessage.length)
+
+        setQrCodeValue(qrCodeMessage)
 
         setShow(true)
     }, [values, genPass])
