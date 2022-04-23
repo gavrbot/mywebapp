@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@chainsafe/bls": "^6.0.1",
     "@testing-library/jest-dom": "^5.12.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "bootstrap": "^5.0.1",
     "card-validator": "^8.1.1",
-    "crypto-js": "^4.1.1",
-    "js-crypto-rsa": "^1.0.2",
     "jsencrypt": "^3.2.1",
     "object-sizeof": "^1.6.3",
     "qrcode.react": "^1.0.1",
@@ -20,7 +17,6 @@
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
     "typescript": "^4.6.3",
-    "utf32char": "^1.4.1",
     "web-vitals": "^1.1.2"
   },
   "scripts": {

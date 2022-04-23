@@ -6,12 +6,7 @@ import "./CreditCardForm.css";
 import Cards from "react-credit-cards";
 import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
-import rsa from 'js-crypto-rsa';
-import {UInt32, UTF32Char} from "utf32char";
 import {JSEncrypt} from "jsencrypt";
-import CryptoJS from "crypto-js";
-import zlib from "zlib";
-import sizeof from "object-sizeof";
 
 const makeid = (length) => {
     var result = [];
@@ -29,8 +24,6 @@ const CreditCardForm = () => {
     const [pass, setPass] = useState('')
     const [timer, setTimer] = useState(undefined)
     const [genPass, setGenPass] = useState(makeid(6))
-    const [secretRSAKey, setSecretRSAKey] = useState()
-    const [publicRSAKey, setPublicRSAKey] = useState()
 
     const onHandleSubmit = useCallback(() => {
 
@@ -40,17 +33,19 @@ const CreditCardForm = () => {
 
         var CryptoJS = require("crypto-js");
 
+        let operationType = getOperationType(getRandomInt(1,5))
+
         var messageForSignature = values.cardName.slice(0,values.cardName.indexOf(" "))+
             values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             timeStamp+
             values.cardAmount+
-            getOperationType(1);
+            operationType;
 
         var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
             " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
             " "+timeStamp+
             " "+values.cardAmount+
-            " "+getOperationType(1);
+            " "+operationType;
 
         console.log("message: " + message)
 
@@ -106,9 +101,24 @@ const CreditCardForm = () => {
 
     // eslint-disable-next-line no-unused-vars
     function getOperationType(numb) {
-        if(numb === 1)
-            return "bank_transfer"
+        switch (numb) {
+            case 1:
+                return "bank_transfer"
+            case 2:
+                return "P2P_transfer"
+            case 3:
+                return "system_transfer"
+            case 4:
+                return "shop_purchase"
+            default:
+                return "bank_transfer"
+        }
+    }
 
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //Максимум не включается, минимум включается
     }
 
     const handleClose = () => setShow(false);
