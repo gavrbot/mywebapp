@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^12.8.3",
     "bootstrap": "^5.0.1",
     "card-validator": "^8.1.1",
+    "crypto-js": "^4.1.1",
     "jsencrypt": "^3.2.1",
     "object-sizeof": "^1.6.3",
     "qrcode.react": "^1.0.1",
