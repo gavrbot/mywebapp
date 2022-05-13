@@ -8,11 +8,15 @@ import "react-credit-cards/es/styles-compiled.css";
 import QRCode from "qrcode.react";
 import {JSEncrypt} from "jsencrypt";
 
-const makeid = (length) => {
+const publicCheckKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO71iVLEu7umehJ0HJ5501wW1rSKTL3hkng+WRJZCnQ/3ZWLJrdLdgRRkaQMpzdF+AmqvtioluXjZdyrhLpkRtcAkjgQbBnRnL5zirJydmYZJU8CRSjrrER439hHTD9Zml1y9Pa//NPcfnd9iw6kZSX5rArEzFiKp3hRZGgecYwIDAQAB"
+
+const privateCheckKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAME7vWJUsS7u6Z6EnQcnnnTXBbWtIpMveGSeD5ZElkKdD/dlYsmt0t2BFGRpAynN0X4Caq+2KiW5eNl3KuEumRG1wCSOBBsGdGcvnOKsnJ2ZhklTwJFKOusRHjf2EdMP1maXXL09r/809x+d32LDqRlJfmsCsTMWIqneFFkaB5xjAgMBAAECgYEAm4K/hI5SVkoyO7/QPDzXWoLd9ntTEw8mHhvSwYWLRCrw+ZJfsZ2x0VAboD+fKxqYGYhKYgUB4IBm0OUF3lnJF0CmzWYcPg7QpsNRU2iCp50c6EyGmNItpPQycnTx68xG1RTYE1EXfwAmHDeB9Bbsk87HHdJQqjANnUFeSDPq9/ECQQDelkKO7rZA/KNKmQJZIqGEGWvlMb+5SuHCiVRLT3vqKuaub0Fym1Ey6ngVYN5yZt2tnUV6brfwr+/y3TyQlq0pAkEA3j11Ju32DsAzC4dtmDM4vee8KY7OpnE2dkEGA9K6U8M/R3y3WQEtUC8kqf+m9EXOdiMlB72Ld0N0TojQ+R6iqwJAMcDShdJz6JjQAyeqb7Qe+EEabfOt0EQdrHc34VGV+CS4xXrW3UA8aS4hw12Qu2+k017ZHeHLucAJ2XZ8SDF16QJAE+woe2Proeji6o6qaXF2Dbgfaw5NQih1/GXZ1y/l2ipvmsX4Xbc4S67eN4seeVlkp7yAzk/Ul81pOL0VFrADXwJBAI/2Oq2AcSNOu6QY3JuzU4kN1mjKGDkBqmV3nHev9bp7NLyoasqzg8xo9lvuYjPpo47JXPgpH+CXXkLTTmqk/m8=";
+
+const makeid = () => {
     var result = [];
     var characters = '0123456789';
     var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
+    for ( var i = 0; i < 6; i++ ) {
         result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
     }
     return result.join('');
@@ -26,46 +30,7 @@ const CreditCardForm = () => {
     const [genPass, setGenPass] = useState(makeid(6))
 
     const onHandleSubmit = useCallback(() => {
-
-        let publicCheckKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO71iVLEu7umehJ0HJ5501wW1rSKTL3hkng+WRJZCnQ/3ZWLJrdLdgRRkaQMpzdF+AmqvtioluXjZdyrhLpkRtcAkjgQbBnRnL5zirJydmYZJU8CRSjrrER439hHTD9Zml1y9Pa//NPcfnd9iw6kZSX5rArEzFiKp3hRZGgecYwIDAQAB"
-
-        let privateCheckKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAME7vWJUsS7u6Z6EnQcnnnTXBbWtIpMveGSeD5ZElkKdD/dlYsmt0t2BFGRpAynN0X4Caq+2KiW5eNl3KuEumRG1wCSOBBsGdGcvnOKsnJ2ZhklTwJFKOusRHjf2EdMP1maXXL09r/809x+d32LDqRlJfmsCsTMWIqneFFkaB5xjAgMBAAECgYEAm4K/hI5SVkoyO7/QPDzXWoLd9ntTEw8mHhvSwYWLRCrw+ZJfsZ2x0VAboD+fKxqYGYhKYgUB4IBm0OUF3lnJF0CmzWYcPg7QpsNRU2iCp50c6EyGmNItpPQycnTx68xG1RTYE1EXfwAmHDeB9Bbsk87HHdJQqjANnUFeSDPq9/ECQQDelkKO7rZA/KNKmQJZIqGEGWvlMb+5SuHCiVRLT3vqKuaub0Fym1Ey6ngVYN5yZt2tnUV6brfwr+/y3TyQlq0pAkEA3j11Ju32DsAzC4dtmDM4vee8KY7OpnE2dkEGA9K6U8M/R3y3WQEtUC8kqf+m9EXOdiMlB72Ld0N0TojQ+R6iqwJAMcDShdJz6JjQAyeqb7Qe+EEabfOt0EQdrHc34VGV+CS4xXrW3UA8aS4hw12Qu2+k017ZHeHLucAJ2XZ8SDF16QJAE+woe2Proeji6o6qaXF2Dbgfaw5NQih1/GXZ1y/l2ipvmsX4Xbc4S67eN4seeVlkp7yAzk/Ul81pOL0VFrADXwJBAI/2Oq2AcSNOu6QY3JuzU4kN1mjKGDkBqmV3nHev9bp7NLyoasqzg8xo9lvuYjPpo47JXPgpH+CXXkLTTmqk/m8=";
-
-        var CryptoJS = require("crypto-js");
-
-        let operationType = getOperationType(getRandomInt(1,5))
-
-        var messageForSignature = values.cardName.slice(0,values.cardName.indexOf(" "))+
-            values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
-            timeStamp+
-            values.cardAmount+
-            operationType;
-
-        var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
-            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
-            " "+timeStamp+
-            " "+values.cardAmount+
-            " "+operationType;
-
-        console.log("message: " + message)
-
-        var sign = new JSEncrypt();
-        sign.setPrivateKey(privateCheckKey);
-        var signature = sign.sign(messageForSignature + genPass, CryptoJS.SHA256, "sha256");
-
-        console.log("signature: " + signature)
-
-        console.log(signature.length)
-
-        var encrypt = new JSEncrypt()
-        encrypt.setPublicKey(publicCheckKey)
-
-        var encryptedPass = encrypt.encrypt(genPass)
-
-        console.log("encrypted password: " + encryptedPass)
-        console.log(encryptedPass.length)
-
-        const qrCodeMessage = message + " " + encryptedPass + " " + signature
+        const qrCodeMessage = createMessage(values, genPass)
 
         console.log("qrcode message: " + qrCodeMessage)
         console.log(qrCodeMessage.length)
@@ -91,17 +56,53 @@ const CreditCardForm = () => {
 
     const [show, setShow] = useState(false);
 
-    const currentDate = new Date();
+    function createMessage(values, genPass) {
+        const CryptoJS = require("crypto-js");
 
-    const date = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+        let operationType = getOperationType()
 
-    const time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+        const encrypt = new JSEncrypt();
+        encrypt.setPublicKey(publicCheckKey)
 
-    const timeStamp = date + "(" + time + ")";
+        const encryptedPass = encrypt.encrypt(genPass);
+        const timeStamp = getTimeStamp()
+
+        console.log("encrypted password: " + encryptedPass)
+        console.log(encryptedPass.length)
+
+        var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
+            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
+            " "+timeStamp+
+            " "+values.cardAmount+
+            " "+operationType+
+            " "+encryptedPass;
+
+        console.log("message: " + message)
+
+        var sign = new JSEncrypt();
+        sign.setPrivateKey(privateCheckKey);
+        var signature = sign.sign(message, CryptoJS.SHA256, "sha256");
+
+        console.log("signature: " + signature)
+
+        console.log(signature.length)
+
+        const qrCodeMessage = message + " " + signature
+
+        return qrCodeMessage
+    }
+
+    function getTimeStamp() {
+        const currentDate = new Date();
+        const date = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+        const time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+
+        return  date + "(" + time + ")";
+    }
 
     // eslint-disable-next-line no-unused-vars
-    function getOperationType(numb) {
-        switch (numb) {
+    function getOperationType() {
+        switch (getRandomInt(1,5)) {
             case 1:
                 return "bank_transfer"
             case 2:
@@ -118,7 +119,7 @@ const CreditCardForm = () => {
     function getRandomInt(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min; //Максимум не включается, минимум включается
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 
     const handleClose = () => setShow(false);
