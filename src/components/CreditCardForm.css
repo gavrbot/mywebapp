@@ -4,10 +4,15 @@
     justify-content: center;
 }
 
+.input {
+    margin-bottom: 10px;
+}
+
 .formDiv {
     width: 400px;
     padding: 30px;
     border-radius: 10px;
+
     -webkit-box-shadow: -1px 8px 15px 0px rgba(0, 0, 0, 0.44);
     -moz-box-shadow: -1px 8px 15px 0px rgba(0, 0, 0, 0.44);
     box-shadow: -1px 8px 15px 0px rgba(0, 0, 0, 0.44);

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import useForm from "../useForm";
 import  { Container, Modal, Button, Form, Alert, Row, Col } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,28 +12,31 @@ const publicCheckKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO71iVLEu7umehJ0H
 
 const privateCheckKey = "MIICdwIBADANBgkqhkiG9w0BAQEFAASCAmEwggJdAgEAAoGBAME7vWJUsS7u6Z6EnQcnnnTXBbWtIpMveGSeD5ZElkKdD/dlYsmt0t2BFGRpAynN0X4Caq+2KiW5eNl3KuEumRG1wCSOBBsGdGcvnOKsnJ2ZhklTwJFKOusRHjf2EdMP1maXXL09r/809x+d32LDqRlJfmsCsTMWIqneFFkaB5xjAgMBAAECgYEAm4K/hI5SVkoyO7/QPDzXWoLd9ntTEw8mHhvSwYWLRCrw+ZJfsZ2x0VAboD+fKxqYGYhKYgUB4IBm0OUF3lnJF0CmzWYcPg7QpsNRU2iCp50c6EyGmNItpPQycnTx68xG1RTYE1EXfwAmHDeB9Bbsk87HHdJQqjANnUFeSDPq9/ECQQDelkKO7rZA/KNKmQJZIqGEGWvlMb+5SuHCiVRLT3vqKuaub0Fym1Ey6ngVYN5yZt2tnUV6brfwr+/y3TyQlq0pAkEA3j11Ju32DsAzC4dtmDM4vee8KY7OpnE2dkEGA9K6U8M/R3y3WQEtUC8kqf+m9EXOdiMlB72Ld0N0TojQ+R6iqwJAMcDShdJz6JjQAyeqb7Qe+EEabfOt0EQdrHc34VGV+CS4xXrW3UA8aS4hw12Qu2+k017ZHeHLucAJ2XZ8SDF16QJAE+woe2Proeji6o6qaXF2Dbgfaw5NQih1/GXZ1y/l2ipvmsX4Xbc4S67eN4seeVlkp7yAzk/Ul81pOL0VFrADXwJBAI/2Oq2AcSNOu6QY3JuzU4kN1mjKGDkBqmV3nHev9bp7NLyoasqzg8xo9lvuYjPpo47JXPgpH+CXXkLTTmqk/m8=";
 
-const makeid = () => {
-    var result = [];
-    var characters = '0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < 6; i++ ) {
-        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
-    }
-    return result.join('');
+const STATUS = {
+    STARTED: 'Started',
+    STOPPED: 'Stopped',
 }
+
+const INITIAL_COUNT = 60
 
 const CreditCardForm = () => {
     const { handleChange, handleFocus, handleSubmit, values, errors } = useForm();
     const [ qrCodeValue, setQrCodeValue ] = useState('')
     const [pass, setPass] = useState('')
-    const [timer, setTimer] = useState(undefined)
-    const [genPass, setGenPass] = useState(makeid(6))
+    const [genPass, setGenPass] = useState('')
+    const [show, setShow] = useState(false);
+    const [secondsRemaining, setSecondsRemaining] = useState(INITIAL_COUNT)
+    const [status, setStatus] = useState(STATUS.STOPPED)
+
+    const secondsToDisplay = secondsRemaining % 60
+    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
+    const minutesToDisplay = minutesRemaining % 60
+
 
     const onHandleSubmit = useCallback(() => {
-        const qrCodeMessage = createMessage(values, genPass)
+        setGenPass(createOneTimePassword(6))
 
-        console.log("qrcode message: " + qrCodeMessage)
-        console.log(qrCodeMessage.length)
+        const qrCodeMessage = createMessage(values, genPass)
 
         setQrCodeValue(qrCodeMessage)
 
@@ -44,95 +47,43 @@ const CreditCardForm = () => {
         console.log(genPass)
         console.log(pass)
         if(pass === genPass){
-            setTimer(new Date())
             console.log("Success")
             alert("success")
         }
         else
-            setTimer(undefined)
             console.log("Password is not correct")
             alert("error")
-    }, [pass,genPass, qrCodeValue, setTimer])
+    }, [pass,genPass, qrCodeValue])
 
-    const [show, setShow] = useState(false);
-
-    function createMessage(values, genPass) {
-        const CryptoJS = require("crypto-js");
-
-        let operationType = getOperationType()
-
-        const encrypt = new JSEncrypt();
-        encrypt.setPublicKey(publicCheckKey)
-
-        const encryptedPass = encrypt.encrypt(genPass);
-        const timeStamp = getTimeStamp()
-
-        console.log("encrypted password: " + encryptedPass)
-        console.log(encryptedPass.length)
-
-        var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
-            " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
-            " "+timeStamp+
-            " "+values.cardAmount+
-            " "+operationType+
-            " "+encryptedPass;
-
-        console.log("message: " + message)
-
-        var sign = new JSEncrypt();
-        sign.setPrivateKey(privateCheckKey);
-        var signature = sign.sign(message, CryptoJS.SHA256, "sha256");
-
-        console.log("signature: " + signature)
-
-        console.log(signature.length)
-
-        const qrCodeMessage = message + " " + signature
-
-        return qrCodeMessage
+    const handleStart = () => {
+        setStatus(STATUS.STARTED)
+    }
+    const handleReset = () => {
+        setStatus(STATUS.STOPPED)
+        setSecondsRemaining(INITIAL_COUNT)
     }
 
-    function getTimeStamp() {
-        const currentDate = new Date();
-        const date = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
-        const time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
-
-        return  date + "(" + time + ")";
+    const handleClose = () => {
+        setShow(false);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    function getOperationType() {
-        switch (getRandomInt(1,5)) {
-            case 1:
-                return "bank_transfer"
-            case 2:
-                return "P2P_transfer"
-            case 3:
-                return "system_transfer"
-            case 4:
-                return "shop_purchase"
-            default:
-                return "bank_transfer"
-        }
-    }
-
-    function getRandomInt(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+    useInterval(
+        () => {
+            if (secondsRemaining > 0) {
+                setSecondsRemaining(secondsRemaining - 1)
+            } else {
+                onHandleSubmit()
+                setSecondsRemaining(INITIAL_COUNT)
+            }
+        },
+        status === STATUS.STARTED ? 1000 : null,
+    )
 
     return (
         <div>
             <div className="container main-container">
                 <div className="box justify-content-center align-items-center">
                     <div className="formDiv">
-                        {!!timer && <div>
-                            {timer}
-                        </div>}
                         <div className="creditCard">
                             <Cards
                                 cvc={values.cardSecurityCode}
@@ -145,6 +96,7 @@ const CreditCardForm = () => {
                         <Form onSubmit={handleSubmit}>
                             <Form.Group>
                                 <Form.Control
+                                    className="input"
                                     type="text"
                                     id="cardName"
                                     data-testid="cardName"
@@ -157,6 +109,7 @@ const CreditCardForm = () => {
                             </Form.Group>
                             <Form.Group>
                                 <Form.Control
+                                    className="input"
                                     type="number"
                                     id="cardNumber"
                                     data-testid="cardNumber"
@@ -169,6 +122,7 @@ const CreditCardForm = () => {
                             </Form.Group>
                             <Form.Group>
                                 <Form.Control
+                                    className="input"
                                     type="number"
                                     id="cardAmount"
                                     name="cardAmount"
@@ -183,7 +137,7 @@ const CreditCardForm = () => {
                                 data-testid="validateButton"
                                 id="validateButton"
                                 type="submit"
-                                onClick={onHandleSubmit}
+                                onClick={() => { onHandleSubmit(); handleStart()}}
                             >
                                 Validate
                             </Button>
@@ -213,6 +167,9 @@ const CreditCardForm = () => {
 
                                         <Col>
                                             <Form.Group>
+                                                <div>
+                                                    {twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}
+                                                </div>
                                                 <Form.Label>Scan this QR code with your phone and
                                                 enter generated password</Form.Label>
                                                 <Form.Control
@@ -228,7 +185,7 @@ const CreditCardForm = () => {
                             </Form>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button variant="secondary" onClick={handleClose}>
+                            <Button variant="secondary" onClick={() => { handleClose(); handleReset()}}>
                                 Close
                             </Button>
                             <Button variant="primary" onClick={onConfirmPassword}>
@@ -241,5 +198,93 @@ const CreditCardForm = () => {
         </div>
     );
 };
+
+const createOneTimePassword = () => {
+    var result = [];
+    var characters = '0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < 6; i++ ) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+    }
+    return result.join('');
+}
+
+const twoDigits = (num) => String(num).padStart(2, '0')
+
+function createMessage(values, genPass) {
+    const CryptoJS = require("crypto-js");
+
+    let operationType = getOperationType()
+
+    const encrypt = new JSEncrypt();
+    encrypt.setPublicKey(publicCheckKey)
+
+    const encryptedPass = encrypt.encrypt(genPass);
+
+    const timeStamp = getTimeStamp()
+
+    var message = values.cardName.slice(0,values.cardName.indexOf(" "))+
+        " "+values.cardNumber.slice(0,4)+ values.cardNumber.slice(-4)+
+        " "+timeStamp+
+        " "+values.cardAmount+
+        " "+operationType+
+        " "+encryptedPass;
+
+    var sign = new JSEncrypt();
+    sign.setPrivateKey(privateCheckKey);
+
+    var signature = sign.sign(message, CryptoJS.SHA256, "sha256");
+
+    const qrCodeMessage = message + " " + signature
+
+    return qrCodeMessage
+}
+
+function getTimeStamp() {
+    const currentDate = new Date();
+    const date = currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
+    const time = currentDate.getHours() + ":" + currentDate.getMinutes() + ":" + currentDate.getSeconds();
+
+    return  date + "(" + time + ")";
+}
+
+function useInterval(callback, delay) {
+    const savedCallback = useRef()
+
+    useEffect(() => {
+        savedCallback.current = callback
+    }, [callback])
+
+    useEffect(() => {
+        function tick() {
+            savedCallback.current()
+        }
+        if (delay !== null) {
+            let id = setInterval(tick, delay)
+            return () => clearInterval(id)
+        }
+    }, [delay])
+}
+
+function getOperationType() {
+    switch (getRandomInt(1,5)) {
+        case 1:
+            return "bank_transfer"
+        case 2:
+            return "P2P_transfer"
+        case 3:
+            return "system_transfer"
+        case 4:
+            return "shop_purchase"
+        default:
+            return "bank_transfer"
+    }
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+}
 
 export default CreditCardForm;
