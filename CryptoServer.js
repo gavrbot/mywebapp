@@ -18,7 +18,7 @@ var genPass = createOneTimePassword()
 
 const app = express()
 
-куconst privateCheckKey = process.env.PRIVATE_KEY
+const privateCheckKey = process.env.PRIVATE_KEY
 const publicCheckKey = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBO71iVLEu7umehJ0HJ5501wW1rSKTL3hkng+WRJZCnQ/3ZWLJrdLdgRRkaQMpzdF+AmqvtioluXjZdyrhLpkRtcAkjgQbBnRnL5zirJydmYZJU8CRSjrrER439hHTD9Zml1y9Pa//NPcfnd9iw6kZSX5rArEzFiKp3hRZGgecYwIDAQAB"
 app.use(express.json())
 app.use(cors())
